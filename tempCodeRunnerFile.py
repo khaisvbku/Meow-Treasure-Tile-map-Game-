@@ -1,0 +1,1 @@
+self.display.blit(self.sign, (100, 100))
