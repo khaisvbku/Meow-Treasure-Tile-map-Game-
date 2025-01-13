@@ -68,7 +68,7 @@ class game:
         self.buttons = [self.replay_button, self.home, self.next_level_button]
         
         # Ingame Words
-        self.word = Word(26, (255, 255, 255), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
+        self.word = Word(26, (243, 222, 138), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
 
     def button_function(self, name:str):
         self.level = self.level = min(self.level+1, self.maximum_level) if name == "level up" else self.level
