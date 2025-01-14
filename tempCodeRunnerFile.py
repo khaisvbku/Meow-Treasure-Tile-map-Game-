@@ -1,1 +1,1 @@
-self.display.blit(self.sign, (100, 100))
+84, 36

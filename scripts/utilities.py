@@ -96,7 +96,7 @@ class Button():
         surface.blit(self.image, self.rect)
 
     def detect_mouse_inside(self, surface, mouse_pos) -> bool:
-        if self.rect.collidepoint(mouse_pos):
+        if self.rect.collidepoint(mouse_pos) and self.alpha >= 255:
             self.draw_border(surface)
             return True
         return False

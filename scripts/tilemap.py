@@ -30,7 +30,7 @@ class Tilemap:
     def start_point(self):
         for loc in self.tile_map["ground_layer"]:
             tile = self.tile_map["ground_layer"][loc]
-            if tile["variant"] == 1 or tile["variant"] == 12:
+            if tile["variant"] == 1 or tile["variant"] == 13:
                 return [(tile["pos"][0] - 1)*self.tile_size, (tile["pos"][1] - 1)*self.tile_size]
             
     def end_point(self):
