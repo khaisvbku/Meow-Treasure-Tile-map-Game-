@@ -2,6 +2,9 @@ import pygame as pg
 import os
 BASE_IMAGE_PATH = "data/images/"
 
+def folder_len(path_to_folder):
+    return len(os.listdir(path_to_folder))
+
 def load_image(path_to_image):
     image = pg.image.load(BASE_IMAGE_PATH + path_to_image).convert_alpha()
     image.set_colorkey((0, 0, 0))

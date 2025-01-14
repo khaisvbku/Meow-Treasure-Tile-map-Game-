@@ -4,8 +4,8 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "menu_map"
-based_level = "menu_map"
+save_name = "level_7"
+based_level = "level_7"
 
 class Editor:
     def __init__(self):

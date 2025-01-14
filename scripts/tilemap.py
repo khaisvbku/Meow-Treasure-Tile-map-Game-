@@ -5,12 +5,13 @@ class Tilemap:
     def __init__(self, game, tile_size = 16):
         self.game = game
         self.tile_size = tile_size
-        self.tile_map = {"water_layer": {},
-                         "ground_layer": {},
-                         "fence_layer": {},
-                         "object_layer": {},
-                         "chest" : {}
-                         }
+        self.tile_map = {
+            "water_layer": {}, 
+            "ground_layer": {},
+            "fence_layer": {},
+            "object_layer": {},
+            "chest" : {}
+            }
 
     def render(self, surface):
         for layer in self.tile_map:
@@ -18,7 +19,7 @@ class Tilemap:
                 tile = self.tile_map[layer][loc]
                 surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
                             (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
-        
+
     def save_map(self, file_name):
         with open(file_name, "w") as json_file:
             json.dump(self.tile_map, json_file, indent=4)
