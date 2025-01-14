@@ -7,47 +7,6 @@ PLAYER_FRAME_DURATION = 15
 CHEST_FRAME_DURATION = 12
 SCREEN_COEFFICIENT = 0.5
 
-class menu:
-    def __init__(self, game):
-        self.game = game
-
-        self.first_word = Word(32, (252, 245, 199), (384, 35), "MEOW MEOW", self.game.assets["Bungee"])
-        
-        self.second_word = Word(55, (255, 238, 147), (384, 85), "TREASURE GAME", self.game.assets["Bungee"])
-
-        self.words = [self.first_word, self.second_word]
-
-        self.tile_map = Tilemap(self.game)
-
-        self.tile_map.load_map("level/menu_map.json")
-
-        self.chest = chest(self.game, self.tile_map, self.tile_map.end_point()[0], self.tile_map.end_point()[1])
-
-        self.player = player(self.game, self.tile_map, self.tile_map.start_point())
-
-        self.play_button = Button(self.game.assets["menu_play"], (98, 42), (384, 180), (252, 245, 199), 2)
-
-        self.continue_button = Button(self.game.assets["menu_continue"], (98, 42), (384, 180), (252, 245, 199), 2)
-    
-        self.new_game_button = Button(self.game.assets["menu_newgame"], (98, 42), (384, 230), (252, 245, 199), 2)
-
-        self.exit_button = Button(self.game.assets["menu_exit"], (98, 42), (384, 280), (252, 245, 199), 2)
-
-    def render(self, surface, level, mouse_pos):
-        self.buttons = [self.play_button, self.new_game_button, self.exit_button] if level == 1 else [self.continue_button, self.new_game_button, self.exit_button]
-        self.tile_map.render(surface)
-        self.chest.render(surface)
-        self.player.render(surface)
-        for word in self.words:
-            word.render(surface)
-        for button in self.buttons:
-            button.render(surface) 
-            button.detect_mouse_inside(surface, mouse_pos)
-    
-    def update(self):
-        self.player.update()
-        self.chest.update()
-        
 class game:
     def __init__(self):
         pg.init()
@@ -61,7 +20,7 @@ class game:
         self.running = True
         self.maximum_level = 6
         self.level = 1
-        self.state = "play"
+        self.state = "menu"
         self.transition = -50
         self.transition_done = True
 
@@ -101,21 +60,30 @@ class game:
             "Bungee": "data/fonts/Bungee-Regular.ttf"
         }
 
-        self.menu = menu(self)
+        # Menu display resources
+        self.first_word = Word(32, (252, 245, 199), (384, 35), "MEOW MEOW", self.assets["Bungee"])
+        self.second_word = Word(55, (255, 238, 147), (384, 85), "TREASURE GAME", self.assets["Bungee"])
+        self.words = [self.first_word, self.second_word]
+        self.tile_map = Tilemap(self)
+        self.tile_map.load_map("level/menu_map.json")
+        self.menu_chest = chest(self, self.tile_map, self.tile_map.end_point()[0], self.tile_map.end_point()[1])
+        self.menu_player = player(self, self.tile_map, self.tile_map.start_point())
+        self.play_button = Button(self.assets["menu_play"], (98, 42), (384, 190), (252, 245, 199), 2)
+        self.continue_button = Button(self.assets["menu_continue"], (98, 42), (384, 190), (252, 245, 199), 2)
+        self.new_game_button = Button(self.assets["menu_newgame"], (98, 42), (384, 240), (252, 245, 199), 2)
+        self.exit_button = Button(self.assets["menu_exit"], (98, 42), (384, 290), (252, 245, 199), 2)
 
+        # Ingame resources
         self.tilemap = Tilemap(self)
-
         self.tilemap.load_map(f"level/level_{self.level}.json")
-
         self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
-
         self.player = player(self, self.tilemap, self.tilemap.start_point())
 
         # Ingame buttons
-        self.replay_button = Button(self.assets["replay"], (42, 42), [324, 210], (252, 245, 199), 2)
-        self.home = Button(self.assets["home"], (42, 42), [384, 210], (252, 245, 199), 2)
-        self.next_level_button = Button(self.assets["next_level"], (42, 42), [444, 210], (252, 245, 199), 2)
-        self.buttons = [self.replay_button, self.home, self.next_level_button]
+        self.replay_button = Button(self.assets["replay"], (42, 42), [324, 210], (252, 245, 199), 2, "appear")
+        self.home = Button(self.assets["home"], (42, 42), [384, 210], (252, 245, 199), 2, "appear")
+        self.next_level_button = Button(self.assets["next_level"], (42, 42), [444, 210], (252, 245, 199), 2, "appear")
+        self.ingame_buttons = [self.replay_button, self.home, self.next_level_button]
         
         # Ingame Words
         self.word = Word(26, (252, 245, 199), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
@@ -128,12 +96,13 @@ class game:
         if name == "home": # Go back to menu display
             self.set_state("menu")
         else: # start or restart the level
+            self.set_state("play")
             if name == "new game":
                 self.level = 1
             elif name == "level up":
                 self.level = min(self.level + 1, self.maximum_level)
 
-            for button in self.buttons:
+            for button in self.ingame_buttons:
                 button.reset()
 
             self.word.update(f"LEVEL {self.level} COMPLETE")
@@ -164,10 +133,27 @@ class game:
     def win(self):
         self.word.render(self.display, "fly", [384, 155], 5)
         if self.word.done:
-            for num, button in enumerate(self.buttons):
-                button.animation([338 + num*60, 210], "appear", 5)
+            for num, button in enumerate(self.ingame_buttons):
+                button.animation([338 + num*60, 210], 5)
                 button.render(self.display)
                 button.detect_mouse_inside(self.display, self.mouse_pos)
+
+    def menu_render(self):
+        self.menu_buttons = [self.play_button, self.new_game_button, self.exit_button] if self.level == 1 else [self.continue_button, self.new_game_button, self.exit_button]
+        self.tile_map.render(self.display)
+        self.menu_chest.render(self.display)
+        self.menu_player.render(self.display)
+        
+        for word in self.words:
+            word.render(self.display)
+        
+        for button in self.menu_buttons:
+            button.render(self.display) 
+            button.detect_mouse_inside(self.display, self.mouse_pos)
+
+    def menu_update(self):
+        self.menu_player.update()
+        self.menu_chest.update()
 
     def handle_event(self):
         for event in pg.event.get():
@@ -196,12 +182,12 @@ class game:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if self.state == "menu":
-                            if self.menu.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
+                            if self.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.running = False
-                            elif self.menu.continue_button.detect_mouse_inside(self.display, self.mouse_pos) or self.menu.play_button.detect_mouse_inside(self.display, self.mouse_pos):
+                            elif self.continue_button.detect_mouse_inside(self.display, self.mouse_pos) or self.play_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
                                 self.button_function("replay")
-                            elif self.menu.new_game_button.detect_mouse_inside(self.display, self.mouse_pos):
+                            elif self.new_game_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
                                 self.button_function("new game")
                         elif self.state == "play":
@@ -236,8 +222,8 @@ class game:
             self.handle_event()
 
             if self.state == "menu":
-                self.menu.render(self.display, self.level, self.mouse_pos)
-                self.menu.update()
+                self.menu_render()
+                self.menu_update()
 
             elif self.state == "play":
                 self.game_render()

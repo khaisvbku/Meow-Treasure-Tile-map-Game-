@@ -60,7 +60,7 @@ class Animation:
 import pygame as pg
 
 class Button():
-    def __init__(self, image, size: tuple, pos: tuple, border_color: tuple, border_width: int):
+    def __init__(self, image, size: tuple, pos: tuple, border_color: tuple, border_width: int, animation_type=None):
         self.image = pg.transform.scale(image, size).convert_alpha()
         self.INITIAL_POS = pos
         self.pos = list(pos)
@@ -69,16 +69,17 @@ class Button():
         self.border_color = border_color
         self.border_width = border_width
         self.rect = self.image.get_rect(center=self.pos)
-        self.alpha = 0
+        self.alpha = 255 if animation_type == None else 0
         self.done = False
+        self.animation_type = animation_type
 
     def draw_border(self, surface):
         offset = self.rect.topleft
         adjusted_outline = [(p[0] + offset[0], p[1] + offset[1]) for p in self.outline]
         pg.draw.lines(surface, self.border_color, True, adjusted_outline, self.border_width)
 
-    def animation(self, end_pos: tuple, animation_type=None, speed=None):
-        if animation_type == "fly":
+    def animation(self, end_pos: tuple, speed=None):
+        if self.animation_type == "fly":
             dx = min(speed, abs(end_pos[0] - self.rect.centerx))
             dy = min(speed, abs(end_pos[1] - self.rect.centery))
             new_x = self.rect.centerx + dx if self.rect.centerx < end_pos[0] else self.rect.centerx - dx
@@ -87,7 +88,7 @@ class Button():
             if dx == dy == 0:
                 self.done = True
 
-        elif animation_type == "appear":
+        elif self.animation_type == "appear":
             self.alpha = min(self.alpha + speed, 255)
             self.image.set_alpha(self.alpha)
             self.done = True if self.alpha == 255 else False
