@@ -81,10 +81,11 @@ class game:
         self.exit_button = Button(self.assets["menu_exit"], (98, 42), (384, 290), (252, 245, 199), 2)
 
         # Pause resources:
+        self.pause_button = Button(self.assets["pause_icon"], (32, 32), (20, 20), (252, 245, 199), 2)
         self.pause_word = Word(32, (252, 245, 199), (384, 120), "PAUSE", self.assets["Bungee"])
-        self.pause_home = Button(self.assets["pause_home"], (84, 36), (384, 160), (252, 245, 199), 2)
+        self.pause_resume = Button(self.assets["pause_resume"], (84, 36), (384, 160), (252, 245, 199), 2)
         self.pause_restart = Button(self.assets["pause_restart"], (84, 36), (384, 200), (252, 245, 199), 2)
-        self.pause_resume = Button(self.assets["pause_resume"], (84, 36), (384, 240), (252, 245, 199), 2)
+        self.pause_home = Button(self.assets["pause_home"], (84, 36), (384, 240), (252, 245, 199), 2)
         self.pause_buttons = [self.pause_resume, self.pause_restart, self.pause_home]
 
         # Ingame resources
@@ -109,24 +110,38 @@ class game:
     def button_function(self, name:str):
         if name == "home": # Go back to menu display
             self.set_state("menu")
-        else: # start or restart the level
+        
+        elif name == "new game":
             self.set_state("play")
-            if name == "new game":
-                self.level = 1
-            elif name == "level up":
-                self.level = min(self.level + 1, self.maximum_level)
+            self.level = 1
+            for button in self.ingame_buttons:
+                button.reset()
+            self.word.update(f"LEVEL {self.level} COMPLETE")
+            self.word.reset()
+            self.tilemap.load_map(f"level/level_{self.level}.json")
+            self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
+            self.player = player(self, self.tilemap, self.tilemap.start_point())
+            
+        elif name == "level up":
+            self.set_state("play")
+            self.level = min(self.level + 1, self.maximum_level)
 
             for button in self.ingame_buttons:
                 button.reset()
-
             self.word.update(f"LEVEL {self.level} COMPLETE")
-
             self.word.reset()
-
             self.tilemap.load_map(f"level/level_{self.level}.json")
-
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
+            self.player = player(self, self.tilemap, self.tilemap.start_point())
 
+        elif name == "replay":
+            self.set_state("play")
+            for button in self.ingame_buttons:
+                button.reset()
+            self.word.update(f"LEVEL {self.level} COMPLETE")
+            self.word.reset()
+            self.tilemap.load_map(f"level/level_{self.level}.json")
+            self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
 
     def transition_effect(self):
@@ -202,7 +217,7 @@ class game:
                     elif event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
                         self.pause = not self.pause
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    if event.button == 1:
+                    if event.button == 1: # Left button clicked
                         if self.state == "menu":
                             if self.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.running = False
@@ -222,6 +237,8 @@ class game:
                             elif self.home.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
                                 self.button_function("home")
+                            elif self.pause_button.detect_mouse_inside(self.display, self.mouse_pos) and not self.pause:
+                                self.pause = True
                             if self.pause:
                                 if self.pause_home.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.transition_done = False
@@ -238,11 +255,13 @@ class game:
         self.tilemap.render(self.display)
         self.player.render(self.display)
         self.chest.render(self.display)
+        self.pause_button.render(self.display)
 
     def game_update(self):
         self.player.update()
         self.player.move()
         self.chest.update()
+        self.pause_button.detect_mouse_inside(self.display, self.mouse_pos)
         if self.player.found_chest():
             self.chest.founded()
         if self.chest.animation.done:
