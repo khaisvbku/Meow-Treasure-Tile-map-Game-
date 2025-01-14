@@ -3,7 +3,8 @@ from scripts.utilities import load_image, load_images, Animation, Button, Word
 from scripts.entities import player, chest
 from scripts.tilemap import Tilemap
 
-PLAYER_FRAME_DURATION = 15
+PLAYER_RUN_DURATION = 10
+PLAYER_IDLE_DURATION = 18
 CHEST_FRAME_DURATION = 12
 SCREEN_COEFFICIENT = 0.5
 
@@ -12,17 +13,17 @@ class game:
         pg.init()
         self.screen = pg.display.set_mode((1536, 800))
         self.screen_size = self.screen.get_size()
-        self.display = pg.surface.Surface((self.screen_size[0] * SCREEN_COEFFICIENT, 
-                                           self.screen_size[1] * SCREEN_COEFFICIENT))
+        self.display = pg.surface.Surface((self.screen_size[0] * SCREEN_COEFFICIENT, self.screen_size[1] * SCREEN_COEFFICIENT))
         self.clock = pg.time.Clock()
         pg.display.set_caption("ESCAPE THE ISLAND")
 
         self.running = True
         self.maximum_level = 6
         self.level = 1
-        self.state = "menu"
+        self.state = "play"
         self.transition = -50
         self.transition_done = True
+        self.pause = False
 
         self.assets = {
             # Button image:
@@ -38,11 +39,17 @@ class game:
             "menu_continue": load_image("button/menu_continue.png"),
             "menu_exit": load_image("button/menu_exit.png"), 
 
+            "pause_icon": load_image("button/pause.png"),
+            "pause_resume": load_image("button/pause_resume.png"),
+            "pause_restart": load_image("button/pause_restart.png"),
+            "pause_home": load_image("button/pause_home.png"),
+            "pause_table": load_image("button/pause_table.png"),
+
             # Player: Syntax: assets["player/" + "direcition"]["state"]
-            "player/front": {"idle": Animation(load_images("player/front", "idle"), PLAYER_FRAME_DURATION), "run" : Animation(load_images("player/front", "run"), PLAYER_FRAME_DURATION)},
-            "player/back": {"idle": Animation(load_images("player/back", "idle"), PLAYER_FRAME_DURATION), "run" : Animation(load_images("player/back", "run"), PLAYER_FRAME_DURATION)},
-            "player/left": {"idle": Animation(load_images("player/left", "idle"), PLAYER_FRAME_DURATION), "run" : Animation(load_images("player/left", "run"), PLAYER_FRAME_DURATION)},
-            "player/right": {"idle": Animation(load_images("player/right", "idle"), PLAYER_FRAME_DURATION), "run" : Animation(load_images("player/right", "run"), PLAYER_FRAME_DURATION)},
+            "player/front": {"idle": Animation(load_images("player/front", "idle"), PLAYER_IDLE_DURATION), "run" : Animation(load_images("player/front", "run"), PLAYER_RUN_DURATION )},
+            "player/back": {"idle": Animation(load_images("player/back", "idle"), PLAYER_IDLE_DURATION), "run" : Animation(load_images("player/back", "run"), PLAYER_RUN_DURATION )},
+            "player/left": {"idle": Animation(load_images("player/left", "idle"), PLAYER_IDLE_DURATION), "run" : Animation(load_images("player/left", "run"), PLAYER_RUN_DURATION )},
+            "player/right": {"idle": Animation(load_images("player/right", "idle"), PLAYER_IDLE_DURATION), "run" : Animation(load_images("player/right", "run"), PLAYER_RUN_DURATION )},
 
             # Chest:            
             "chest/front": {"close": Animation(load_images("chest/front", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/front", "open"), CHEST_FRAME_DURATION)},
@@ -72,6 +79,13 @@ class game:
         self.continue_button = Button(self.assets["menu_continue"], (98, 42), (384, 190), (252, 245, 199), 2)
         self.new_game_button = Button(self.assets["menu_newgame"], (98, 42), (384, 240), (252, 245, 199), 2)
         self.exit_button = Button(self.assets["menu_exit"], (98, 42), (384, 290), (252, 245, 199), 2)
+
+        # Pause resources:
+        self.pause_word = Word(32, (252, 245, 199), (384, 120), "PAUSE", self.assets["Bungee"])
+        self.pause_home = Button(self.assets["pause_home"], (84, 36), (384, 160), (252, 245, 199), 2)
+        self.pause_restart = Button(self.assets["pause_restart"], (84, 36), (384, 200), (252, 245, 199), 2)
+        self.pause_resume = Button(self.assets["pause_resume"], (84, 36), (384, 240), (252, 245, 199), 2)
+        self.pause_buttons = [self.pause_resume, self.pause_restart, self.pause_home]
 
         # Ingame resources
         self.tilemap = Tilemap(self)
@@ -155,30 +169,38 @@ class game:
         self.menu_player.update()
         self.menu_chest.update()
 
+    def pause_render(self):
+        self.pause_word.render(self.display)
+        for button in self.pause_buttons:
+            button.render(self.display)
+            button.detect_mouse_inside(self.display, self.mouse_pos)
+
     def handle_event(self):
         for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.running = False
                 if event.type == pg.KEYDOWN:
-                    if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.player.found_chest()):
+                    if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.player.found_chest() or self.pause):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("left")
                         
-                    elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.player.found_chest()):
+                    elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.player.found_chest() or self.pause):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("right")
                         
-                    elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.player.found_chest()):
+                    elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.player.found_chest() or self.pause):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("front")
                         
-                    elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.player.found_chest()):
+                    elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.player.found_chest() or self.pause):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("back")
+                    elif event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
+                        self.pause = not self.pause
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if self.state == "menu":
@@ -200,7 +222,18 @@ class game:
                             elif self.home.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
                                 self.button_function("home")
-    
+                            if self.pause:
+                                if self.pause_home.detect_mouse_inside(self.display, self.mouse_pos):
+                                    self.transition_done = False
+                                    self.pause = False
+                                    self.button_function("home")
+                                elif self.pause_restart.detect_mouse_inside(self.display, self.mouse_pos):
+                                    self.transition_done = False
+                                    self.pause = False
+                                    self.button_function("replay")
+                                elif self.pause_resume.detect_mouse_inside(self.display, self.mouse_pos):
+                                    self.pause = False
+
     def game_render(self):
         self.tilemap.render(self.display)
         self.player.render(self.display)
@@ -227,7 +260,10 @@ class game:
 
             elif self.state == "play":
                 self.game_render()
-                self.game_update()
+                if self.pause:
+                    self.pause_render()
+                else:
+                    self.game_update()
             
             if not self.transition_done:
                 self.transition_effect()
