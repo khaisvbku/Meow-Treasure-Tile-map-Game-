@@ -26,11 +26,11 @@ class game:
 
         self.running = True
         self.maximum_level = folder_len("level") - 2
-        self.level = 1
+        self.level = 8
         self.state = "menu"
         self.transition = -30
         self.transition_done = True
-        self.next_display = False
+        self.next_display = ""
         self.pause = False
 
         self.assets = {
@@ -155,7 +155,10 @@ class game:
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
 
-    def transition_effect(self):
+    def transition_effect(self, name):
+        if self.transition == 0:
+            self.button_function(name)
+
         if self.transition < 30:
             self.transition += 1.5
         radius = abs(self.transition) * 12
@@ -237,26 +240,26 @@ class game:
                                 self.running = False
                             elif self.continue_button.detect_mouse_inside(self.display, self.mouse_pos) or self.play_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.next_display = "replay"
                                 self.click_sound.play()
-                                self.button_function("replay")
                             elif self.new_game_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.next_display = "new game"
                                 self.click_sound.play()
-                                self.button_function("new game")
                         
                         elif self.state == "play": # PLAYING SCREEN
                             if self.next_level_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.next_display = "level up"
                                 self.click_sound.play()
-                                self.button_function("level up")
                             elif self.replay_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.next_display = "replay"
                                 self.click_sound.play()
-                                self.button_function("replay")
                             elif self.home.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.next_display = "home"
                                 self.click_sound.play()
-                                self.button_function("home")
                             elif self.pause_button.detect_mouse_inside(self.display, self.mouse_pos) and not self.pause and not self.chest.animation.done:
                                 self.pause = True
                                 self.click_sound.play()
@@ -264,14 +267,14 @@ class game:
                             if self.pause: # PAUSE
                                 if self.pause_home.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.transition_done = False
+                                    self.next_display = "home"
                                     self.pause = False
                                     self.click_sound.play()
-                                    self.button_function("home")
                                 elif self.pause_restart.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.transition_done = False
+                                    self.next_display = "replay"
                                     self.pause = False
                                     self.click_sound.play()
-                                    self.button_function("replay")
                                 elif self.pause_resume.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.pause = False
                                     self.click_sound.play()
@@ -293,6 +296,11 @@ class game:
         else:
             self.pause_button.detect_mouse_inside(self.display, self.mouse_pos)
 
+    def system_update(self):
+        self.screen.blit((pg.transform.scale(self.display, self.screen.get_size())), (0, 0))
+        self.clock.tick(60)
+        pg.display.flip()
+
     def run(self):
         while self.running:
             self.handle_event()
@@ -309,11 +317,8 @@ class game:
                     self.game_update()
             
             if not self.transition_done:
-                self.transition_effect()
-
-            self.screen.blit((pg.transform.scale(self.display, self.screen.get_size())), (0, 0))
-            self.clock.tick(60)
-            pg.display.flip()
+                self.transition_effect(self.next_display)
+            self.system_update()
         pg.quit()
 
 if __name__ == "__main__":

@@ -27,7 +27,6 @@ class physical_entities:
         self.animation.update()
         self.tile_pos = [(self.pos[0]) // self.tile_size + 1, self.pos[1] // self.tile_size + 1]
         
-
 class player(physical_entities):
     def __init__(self, game, tile_map, pos):        
 
