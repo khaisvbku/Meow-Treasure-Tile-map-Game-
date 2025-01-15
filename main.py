@@ -25,13 +25,13 @@ class game:
         self.click_sound = pg.mixer.Sound("data/sound/click_sound.wav")
 
         self.running = True
+        self.transition_done = True
+        self.pause = False
         self.maximum_level = folder_len("level") - 2
         self.level = 8
-        self.state = "menu"
         self.transition = -30
-        self.transition_done = True
+        self.state = "play"
         self.next_display = ""
-        self.pause = False
 
         self.assets = {
             # Ingame buttons:
@@ -113,6 +113,9 @@ class game:
         
         # Ingame Words
         self.word = Word(26, (252, 245, 199), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
+
+    def level_up(self):
+        self.level += 1
 
     def set_state(self, state):
         if state != self.state:

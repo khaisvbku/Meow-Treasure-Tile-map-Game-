@@ -10034,7 +10034,9 @@
         }
     },
     "ground_layer": {},
+    "dirt": {},
     "fence_layer": {},
     "object_layer": {},
-    "chest": {}
+    "chest": {},
+    "item": {}
 }

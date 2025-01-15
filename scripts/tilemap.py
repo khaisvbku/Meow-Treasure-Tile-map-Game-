@@ -8,9 +8,11 @@ class Tilemap:
         self.tile_map = {   
             "water_layer": {}, 
             "ground_layer": {},
+            "dirt": {},
             "fence_layer": {},
             "object_layer": {},
-            "chest" : {}
+            "chest" : {},
+            "item": {}
             }
 
     def render(self, surface):
