@@ -5,24 +5,32 @@ from scripts.tilemap import Tilemap
 
 PLAYER_RUN_DURATION = 10
 PLAYER_IDLE_DURATION = 18
-CHEST_FRAME_DURATION = 12
+CHEST_FRAME_DURATION = 10
 SCREEN_COEFFICIENT = 0.5
 
 class game:
     def __init__(self):
         pg.init()
+        pg.mixer.init()
         self.screen = pg.display.set_mode((1536, 800))
         self.screen_size = self.screen.get_size()
         self.display = pg.surface.Surface((self.screen_size[0] * SCREEN_COEFFICIENT, self.screen_size[1] * SCREEN_COEFFICIENT))
         self.clock = pg.time.Clock()
         pg.display.set_caption("ESCAPE THE ISLAND")
 
+        # Ingame background music % sounds
+        pg.mixer.music.load("data/sound/background_music.mp3")
+        pg.mixer.music.set_volume(0.5)
+        pg.mixer.music.play(loops = -1)
+        self.click_sound = pg.mixer.Sound("data/sound/click_sound.wav")
+
         self.running = True
         self.maximum_level = folder_len("level") - 2
-        self.level = 7
+        self.level = 1
         self.state = "menu"
-        self.transition = -50
+        self.transition = -30
         self.transition_done = True
+        self.next_display = False
         self.pause = False
 
         self.assets = {
@@ -56,6 +64,7 @@ class game:
             # Chest: Syntax: assets["chest/" + "direcition"]["state"]         
             "chest/front": {"close": Animation(load_images("chest/front", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/front", "open"), CHEST_FRAME_DURATION)},
             "chest/left": {"close": Animation(load_images("chest/left", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/left", "open"), CHEST_FRAME_DURATION)},
+            "chest_open": pg.mixer.Sound("data/sound/chest_open.wav"),
             
             # Map & others:
             "grass" : load_images("grass"),
@@ -84,10 +93,10 @@ class game:
 
         # Pause resources:
         self.pause_button = Button(self.assets["pause_icon"], (32, 32), (20, 20), (252, 245, 199), 2)
-        self.pause_word = Word(32, (252, 245, 199), (384, 120), "PAUSE", self.assets["Bungee"])
-        self.pause_resume = Button(self.assets["pause_resume"], (86, 42), (384, 160), (252, 245, 199), 2)
-        self.pause_restart = Button(self.assets["pause_restart"], (86, 42), (384, 210), (252, 245, 199), 2)
-        self.pause_home = Button(self.assets["pause_home"], (86, 42), (384, 260), (252, 245, 199), 2)
+        self.pause_word = Word(36, (252, 245, 199), (384, 130), "PAUSE", self.assets["Bungee"])
+        self.pause_resume = Button(self.assets["pause_resume"], (86, 42), (334, 180), (252, 245, 199), 2)
+        self.pause_restart = Button(self.assets["pause_restart"], (86, 42), (434, 180), (252, 245, 199), 2)
+        self.pause_home = Button(self.assets["pause_home"], (86, 42), (384, 230), (252, 245, 199), 2)
         self.pause_buttons = [self.pause_resume, self.pause_restart, self.pause_home]
 
         # Ingame resources
@@ -147,13 +156,13 @@ class game:
             self.player = player(self, self.tilemap, self.tilemap.start_point())
 
     def transition_effect(self):
-        if self.transition < 0:
-            self.transition += 1
-        radius = (50 - abs(self.transition)) * 10
+        if self.transition < 30:
+            self.transition += 1.5
+        radius = abs(self.transition) * 12
 
-        if self.transition == 0:
-            self.transition = -50  
-            self.transition_done = True  
+        if self.transition >= 30:
+            self.transition = -30  
+            self.transition_done = True
 
         if self.transition:
             transition_surf = pg.Surface(self.display.get_size())
@@ -193,8 +202,10 @@ class game:
             button.detect_mouse_inside(self.display, self.mouse_pos)
 
     def handle_event(self):
+        self.mouse_pos = (pg.mouse.get_pos()[0] * SCREEN_COEFFICIENT, pg.mouse.get_pos()[1] * SCREEN_COEFFICIENT)
         for event in pg.event.get():
                 if event.type == pg.QUIT:
+                    pg.mixer.music.stop()
                     self.running = False
                 if event.type == pg.KEYDOWN:
                     if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.player.found_chest() or self.pause):
@@ -218,40 +229,52 @@ class game:
                         self.player.set_direction("back")
                     elif event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
                         self.pause = not self.pause
+                        self.click_sound.play()
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == 1: # Left button clicked
-                        if self.state == "menu":
+                        if self.state == "menu": # MENU
                             if self.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.running = False
                             elif self.continue_button.detect_mouse_inside(self.display, self.mouse_pos) or self.play_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.click_sound.play()
                                 self.button_function("replay")
                             elif self.new_game_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.click_sound.play()
                                 self.button_function("new game")
-                        elif self.state == "play":
+                        
+                        elif self.state == "play": # PLAYING SCREEN
                             if self.next_level_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.click_sound.play()
                                 self.button_function("level up")
                             elif self.replay_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.click_sound.play()
                                 self.button_function("replay")
                             elif self.home.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.transition_done = False
+                                self.click_sound.play()
                                 self.button_function("home")
                             elif self.pause_button.detect_mouse_inside(self.display, self.mouse_pos) and not self.pause and not self.chest.animation.done:
                                 self.pause = True
-                            if self.pause:
+                                self.click_sound.play()
+                            
+                            if self.pause: # PAUSE
                                 if self.pause_home.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.transition_done = False
                                     self.pause = False
+                                    self.click_sound.play()
                                     self.button_function("home")
                                 elif self.pause_restart.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.transition_done = False
                                     self.pause = False
+                                    self.click_sound.play()
                                     self.button_function("replay")
                                 elif self.pause_resume.detect_mouse_inside(self.display, self.mouse_pos):
                                     self.pause = False
+                                    self.click_sound.play()
 
     def game_render(self):
         self.tilemap.render(self.display)
@@ -272,7 +295,6 @@ class game:
 
     def run(self):
         while self.running:
-            self.mouse_pos = (pg.mouse.get_pos()[0] * SCREEN_COEFFICIENT, pg.mouse.get_pos()[1] * SCREEN_COEFFICIENT)
             self.handle_event()
 
             if self.state == "menu":

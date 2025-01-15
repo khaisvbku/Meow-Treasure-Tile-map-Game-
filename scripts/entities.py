@@ -30,6 +30,7 @@ class physical_entities:
 
 class player(physical_entities):
     def __init__(self, game, tile_map, pos):        
+
         self.state = "idle"
 
         self.direction = "front"
@@ -87,10 +88,10 @@ class player(physical_entities):
 class chest(physical_entities):
     def __init__(self, game, tile_map, direction, pos):
         self.state = "close"
-
         self.direction = direction
         
         super().__init__("chest", game, tile_map, pos)
+        self.open_sound = self.game.assets["chest_open"]
     
     def update(self):
         if not self.animation.done:
@@ -99,4 +100,5 @@ class chest(physical_entities):
     def founded(self):
         if self.state != "open":
             self.set_state("open")
+            self.open_sound.play()
             self.animation.loop = False

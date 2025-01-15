@@ -5,7 +5,7 @@ class Tilemap:
     def __init__(self, game, tile_size = 16):
         self.game = game
         self.tile_size = tile_size
-        self.tile_map = {
+        self.tile_map = {   
             "water_layer": {}, 
             "ground_layer": {},
             "fence_layer": {},
