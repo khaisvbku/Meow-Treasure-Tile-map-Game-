@@ -17,10 +17,14 @@ class Tilemap:
 
     def render(self, surface):
         for layer in self.tile_map:
+            # if layer != "item":
             for loc in self.tile_map[layer]:
                 tile = self.tile_map[layer][loc]
                 surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
                             (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
+
+    def item_pos(self):
+        return self.tile_map["item"]
 
     def save_map(self, file_name):
         with open(file_name, "w") as json_file:

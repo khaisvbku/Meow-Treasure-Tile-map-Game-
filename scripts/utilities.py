@@ -60,7 +60,7 @@ class Animation:
     def image(self):
         return self.images[int(self.frame / self.duration)]
 
-class Button():
+class Button:
     def __init__(self, image, size: tuple, pos: tuple, border_color: tuple, border_width: int, animation_type=None):
         self.image = pg.transform.scale(image, size).convert_alpha()
         self.INITIAL_POS = pos

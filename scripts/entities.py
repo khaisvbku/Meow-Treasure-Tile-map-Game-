@@ -71,9 +71,10 @@ class player(physical_entities):
                     self.collision[direction] = False
 
     def found_chest(self) -> bool:
-        if self.next_pos[self.direction] in self.tile_map.tile_map["chest"] and self.is_moving == False:
-            return True
-        else: return False
+        return self.next_pos[self.direction] in self.tile_map.tile_map["chest"] and not self.is_moving
+
+    def collected_item(self) -> bool:
+        return self.tile_pos in self.tile_map.tile_map["item"]
 
     def move(self):
         # Movements
@@ -101,3 +102,14 @@ class chest(physical_entities):
             self.set_state("open")
             self.open_sound.play()
             self.animation.loop = False
+
+class Item:
+    def __init__(self, game, pos, variant):
+        self.game = game
+        self.pos = pos
+        self.variant = variant
+        self.image = self.game.assets["item"][self.variant]
+        
+    def render(self, surface):
+        tile_pos = [self.pos[0]*self.game.tilemap.tile_size, self.pos[1]*self.game.tilemap.tile_size]
+        surface.blit(self.image, tile_pos)

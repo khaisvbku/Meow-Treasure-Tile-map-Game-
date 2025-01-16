@@ -4,8 +4,8 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_10"
-based_level = "level_1"
+save_name = "level_5"
+based_level = "level_5"
 
 class Editor:
     def __init__(self):
@@ -22,7 +22,8 @@ class Editor:
             "dirt": load_images("dirt"),
             "fence" : load_images("fence"),
             "object": load_images("objects"),
-            "chest": load_images("chests")
+            "chest": load_images("chests"),
+            "item": load_images("item")
         }
         self.clicking = False
         self.shift = False
@@ -77,6 +78,11 @@ class Editor:
                     elif event.key == pg.K_6:
                         self.tile_layer = 5
                         self.tile_group = 5
+                        self.tile_variant = 0
+
+                    elif event.key == pg.K_TAB:
+                        self.tile_layer = 6
+                        self.tile_group = 6
                         self.tile_variant = 0
 
                     if self.shift and event.key == pg.K_o:

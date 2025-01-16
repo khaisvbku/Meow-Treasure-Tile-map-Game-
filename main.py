@@ -1,6 +1,6 @@
 import pygame as pg
 from scripts.utilities import folder_len, load_image, load_images, Animation, Button, Word
-from scripts.entities import player, chest
+from scripts.entities import player, chest, Item
 from scripts.tilemap import Tilemap
 
 PLAYER_RUN_DURATION = 10
@@ -28,9 +28,9 @@ class game:
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 8
+        self.level = 1
         self.transition = -30
-        self.state = "play"
+        self.state = "menu"
         self.next_display = ""
 
         self.assets = {
@@ -68,10 +68,12 @@ class game:
             
             # Map & others:
             "grass" : load_images("grass"),
+            "dirt": load_images("dirt"),
             "fence" : load_images("fence"),
             "water" : load_images("water"),
             "object": load_images("objects"),
             "chest": load_images("chests"),
+            "item": load_images("item"),
 
             # Fonts:
             "CO - Regular": "data/fonts/ChangaOne-Regular.ttf",
@@ -104,6 +106,10 @@ class game:
         self.tilemap.load_map(f"level/level_{self.level}.json")
         self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
         self.player = player(self, self.tilemap, self.tilemap.start_point())
+        self.item_list = {}
+        for loc in self.tilemap.item_pos():
+            item = self.tilemap.item_pos()[loc]
+            self.item_list[loc] = Item(self, item["pos"], item["variant"])
 
         # Ingame buttons
         self.replay_button = Button(self.assets["replay"], (42, 42), [324, 210], (252, 245, 199), 2, "appear")
@@ -113,9 +119,6 @@ class game:
         
         # Ingame Words
         self.word = Word(26, (252, 245, 199), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
-
-    def level_up(self):
-        self.level += 1
 
     def set_state(self, state):
         if state != self.state:
@@ -135,6 +138,9 @@ class game:
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
+            for loc in self.tilemap.item_pos():
+                item = self.tilemap.item_pos()[loc]
+                self.item_list[loc] = Item(self, item["pos"], item["variant"])
             
         elif name == "level up":
             self.set_state("play")
@@ -147,6 +153,9 @@ class game:
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
+            for loc in self.tilemap.item_pos():
+                item = self.tilemap.item_pos()[loc]
+                self.item_list[loc] = Item(self, item["pos"], item["variant"])
 
         elif name == "replay":
             self.set_state("play")
@@ -157,9 +166,12 @@ class game:
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
+            for loc in self.tilemap.item_pos():
+                item = self.tilemap.item_pos()[loc]
+                self.item_list[loc] = Item(self, item["pos"], item["variant"])
 
     def transition_effect(self, name):
-        if self.transition == 0:
+        if self.transition == -3:
             self.button_function(name)
 
         if self.transition < 30:
@@ -214,22 +226,22 @@ class game:
                     pg.mixer.music.stop()
                     self.running = False
                 if event.type == pg.KEYDOWN:
-                    if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.player.found_chest() or self.pause):
+                    if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("left")
                         
-                    elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.player.found_chest() or self.pause):
+                    elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("right")
                         
-                    elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.player.found_chest() or self.pause):
+                    elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("front")
                         
-                    elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.player.found_chest() or self.pause):
+                    elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                         self.player.is_moving = True
                         self.player.set_state("run")
                         self.player.set_direction("back")
@@ -284,6 +296,9 @@ class game:
 
     def game_render(self):
         self.tilemap.render(self.display)
+        for loc in self.item_list:
+            item = self.item_list[loc]
+            item.render(self.display)
         self.player.render(self.display)
         self.chest.render(self.display)
         self.pause_button.render(self.display)
@@ -292,7 +307,7 @@ class game:
         self.player.update()
         self.player.move()
         self.chest.update()
-        if self.player.found_chest():
+        if self.player.found_chest() and not len(self.item_list):
             self.chest.founded()
         if self.chest.animation.done:
             self.win()
