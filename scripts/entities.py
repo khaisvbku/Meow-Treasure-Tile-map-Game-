@@ -74,7 +74,7 @@ class player(physical_entities):
         return self.next_pos[self.direction] in self.tile_map.tile_map["chest"] and not self.is_moving
 
     def collected_item(self) -> bool:
-        return self.tile_pos in self.tile_map.tile_map["item"]
+        return str(self.tile_pos[0]) + ", " + str(self.tile_pos[1]) in self.tile_map.tile_map["item"]
 
     def move(self):
         # Movements

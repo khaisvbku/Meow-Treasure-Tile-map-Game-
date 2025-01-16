@@ -4,8 +4,8 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_5"
-based_level = "level_5"
+save_name = "level_10"
+based_level = "level_10"
 
 class Editor:
     def __init__(self):
@@ -50,46 +50,18 @@ class Editor:
                     if event.key == pg.K_LSHIFT:
                         self.shift = True
                     
-                    if event.key == pg.K_1:
-                        self.tile_layer = 0
-                        self.tile_group = 0
-                        self.tile_variant = 0
-                    
-                    elif event.key == pg.K_2:
-                        self.tile_layer = 1
-                        self.tile_group = 1
-                        self.tile_variant = 0
-
-                    elif event.key == pg.K_3:
-                        self.tile_layer = 2
-                        self.tile_group = 2
-                        self.tile_variant = 0
-                    
-                    elif event.key == pg.K_4:
-                        self.tile_layer = 3
-                        self.tile_group = 3
-                        self.tile_variant = 0
-
-                    elif event.key == pg.K_5:
-                        self.tile_layer = 4
-                        self.tile_group = 4
-                        self.tile_variant = 0
-
-                    elif event.key == pg.K_6:
-                        self.tile_layer = 5
-                        self.tile_group = 5
-                        self.tile_variant = 0
-
-                    elif event.key == pg.K_TAB:
-                        self.tile_layer = 6
-                        self.tile_group = 6
+                    if event.key == pg.K_SPACE:
+                        self.tile_layer = (self.tile_layer + 1) % len(self.tile_layer_name)
+                        self.tile_group = (self.tile_group + 1) % len(self.tile_list)
                         self.tile_variant = 0
 
                     if self.shift and event.key == pg.K_o:
                         self.tilemap.save_map(f"level/{save_name}.json")
                     elif self.shift and event.key == pg.K_l:
                         self.tilemap.load_map(f"level/{based_level}.json")
-                        self.tile_layer = 1
+                        self.tile_layer = 0
+                        self.tile_group = 0
+                        self.tile_variant = 0
                 
                 if event.type == pg.KEYUP:
                     if event.key == pg.K_LSHIFT:
@@ -150,7 +122,7 @@ class Editor:
 
             self.screen.blit(pg.transform.scale(self.display, self.screen.get_size()), (0, 0))
             self.clock.tick(60)
-            pg.display.flip()        
+            pg.display.flip()    
         pg.quit()
 
 if __name__ == "__main__":

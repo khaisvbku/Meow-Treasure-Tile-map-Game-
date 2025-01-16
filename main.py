@@ -16,7 +16,7 @@ class game:
         self.screen_size = self.screen.get_size()
         self.display = pg.surface.Surface((self.screen_size[0] * SCREEN_COEFFICIENT, self.screen_size[1] * SCREEN_COEFFICIENT))
         self.clock = pg.time.Clock()
-        pg.display.set_caption("ESCAPE THE ISLAND")
+        pg.display.set_caption("~ MEOW AHEAD GET TREASURE ~")
 
         # Ingame background music % sounds
         pg.mixer.music.load("data/sound/background_music.mp3")
@@ -28,7 +28,7 @@ class game:
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 1
+        self.level = 10
         self.transition = -30
         self.state = "menu"
         self.next_display = ""
@@ -64,6 +64,7 @@ class game:
             # Chest: Syntax: assets["chest/" + "direcition"]["state"]         
             "chest/front": {"close": Animation(load_images("chest/front", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/front", "open"), CHEST_FRAME_DURATION)},
             "chest/left": {"close": Animation(load_images("chest/left", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/left", "open"), CHEST_FRAME_DURATION)},
+            "chest/right": {"close": Animation(load_images("chest/right", "close"), CHEST_FRAME_DURATION), "open": Animation(load_images("chest/right", "open"), CHEST_FRAME_DURATION)},
             "chest_open": pg.mixer.Sound("data/sound/chest_open.wav"),
             
             # Map & others:
@@ -190,7 +191,13 @@ class game:
 
     def win(self):
         self.word.render(self.display, "fly", [384, 155], 5)
-        if self.word.done:
+        if self.word.done and self.level == self.maximum_level: # Reach the highest level
+            for num, button in enumerate(self.ingame_buttons):
+                if button != self.next_level_button:
+                    button.animation([338 + num*60, 210], 5)
+                    button.render(self.display)
+                    button.detect_mouse_inside(self.display, self.mouse_pos)
+        elif self.word.done:
             for num, button in enumerate(self.ingame_buttons):
                 button.animation([338 + num*60, 210], 5)
                 button.render(self.display)
@@ -307,6 +314,8 @@ class game:
         self.player.update()
         self.player.move()
         self.chest.update()
+        if self.player.collected_item() and str(self.player.tile_pos[0]) + ", " + str(self.player.tile_pos[1]) in self.item_list:
+            del self.item_list[str(self.player.tile_pos[0]) + ", " + str(self.player.tile_pos[1])]
         if self.player.found_chest() and not len(self.item_list):
             self.chest.founded()
         if self.chest.animation.done:

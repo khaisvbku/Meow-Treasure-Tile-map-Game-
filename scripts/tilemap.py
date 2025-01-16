@@ -17,11 +17,11 @@ class Tilemap:
 
     def render(self, surface):
         for layer in self.tile_map:
-            # if layer != "item":
-            for loc in self.tile_map[layer]:
-                tile = self.tile_map[layer][loc]
-                surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
-                            (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
+            if layer != "item":
+                for loc in self.tile_map[layer]:
+                    tile = self.tile_map[layer][loc]
+                    surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
+                                (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
 
     def item_pos(self):
         return self.tile_map["item"]
@@ -47,3 +47,5 @@ class Tilemap:
                 return ("front", [(tile["pos"][0] - 1)*self.tile_size, (tile["pos"][1] - 1)*self.tile_size])
             elif tile["variant"] == 1:
                 return ("left", [(tile["pos"][0] - 1)*self.tile_size, (tile["pos"][1] - 1)*self.tile_size])
+            elif tile["variant"] == 2:
+                return ("right", [(tile["pos"][0] - 1)*self.tile_size, (tile["pos"][1] - 1)*self.tile_size])
