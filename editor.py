@@ -4,8 +4,8 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_10"
-based_level = "level_10"
+save_name = "level_1"
+based_level = "level_1"
 
 class Editor:
     def __init__(self):
@@ -53,6 +53,11 @@ class Editor:
                     if event.key == pg.K_SPACE:
                         self.tile_layer = (self.tile_layer + 1) % len(self.tile_layer_name)
                         self.tile_group = (self.tile_group + 1) % len(self.tile_list)
+                        self.tile_variant = 0
+                    
+                    elif event.key == pg.K_TAB:
+                        self.tile_layer = 6
+                        self.tile_group = 6
                         self.tile_variant = 0
 
                     if self.shift and event.key == pg.K_o:

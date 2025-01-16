@@ -139,6 +139,7 @@ class game:
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
+            self.item_list = {}
             for loc in self.tilemap.item_pos():
                 item = self.tilemap.item_pos()[loc]
                 self.item_list[loc] = Item(self, item["pos"], item["variant"])
@@ -154,6 +155,7 @@ class game:
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
             self.player = player(self, self.tilemap, self.tilemap.start_point())
+            self.item_list = {}
             for loc in self.tilemap.item_pos():
                 item = self.tilemap.item_pos()[loc]
                 self.item_list[loc] = Item(self, item["pos"], item["variant"])
