@@ -28,7 +28,7 @@ class game:
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 10
+        self.level = 11
         self.transition = -30
         self.state = "menu"
         self.next_display = ""
@@ -78,12 +78,13 @@ class game:
 
             # Fonts:
             "CO - Regular": "data/fonts/ChangaOne-Regular.ttf",
-            "Bungee": "data/fonts/Bungee-Regular.ttf"
+            "Bungee": "data/fonts/Bungee-Regular.ttf",
+            "basic_font": "data/fonts/basic_font.ttf"
         }
 
         # Menu display resources
-        self.first_word = Word(32, (252, 245, 199), (384, 40), "MEOW AHEAD", self.assets["Bungee"])
-        self.second_word = Word(55, (255, 238, 147), (384, 85), "GET TREASURE", self.assets["CO - Regular"])
+        self.first_word = Word(32, (252, 245, 199), (384, 40), "MEOW AHEAD", self.assets["basic_font"])
+        self.second_word = Word(55, (255, 238, 147), (384, 85), "GET TREASURE", self.assets["basic_font"])
         self.words = [self.first_word, self.second_word]
         self.tile_map = Tilemap(self)
         self.tile_map.load_map("level/menu_map.json")
@@ -96,7 +97,7 @@ class game:
 
         # Pause resources:
         self.pause_button = Button(self.assets["pause_icon"], (32, 32), (20, 20), (252, 245, 199), 2)
-        self.pause_word = Word(36, (252, 245, 199), (384, 130), "PAUSE", self.assets["Bungee"])
+        self.pause_word = Word(36, (252, 245, 199), (384, 130), "PAUSE", self.assets["basic_font"])
         self.pause_resume = Button(self.assets["pause_resume"], (86, 42), (334, 180), (252, 245, 199), 2)
         self.pause_restart = Button(self.assets["pause_restart"], (86, 42), (434, 180), (252, 245, 199), 2)
         self.pause_home = Button(self.assets["pause_home"], (86, 42), (384, 230), (252, 245, 199), 2)
@@ -119,7 +120,7 @@ class game:
         self.ingame_buttons = [self.replay_button, self.home, self.next_level_button]
         
         # Ingame Words
-        self.word = Word(26, (252, 245, 199), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
+        self.word = Word(26, (255, 238, 147), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
 
     def set_state(self, state):
         if state != self.state:
@@ -192,7 +193,7 @@ class game:
             self.display.blit(transition_surf, (0, 0))
 
     def win(self):
-        self.word.render(self.display, "fly", [384, 155], 5)
+        self.word.render(self.display, "fly", [384, 160], 5)
         if self.word.done and self.level == self.maximum_level: # Reach the highest level
             for num, button in enumerate(self.ingame_buttons):
                 if button != self.next_level_button:
