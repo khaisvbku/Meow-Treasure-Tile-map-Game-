@@ -84,6 +84,10 @@ class player(physical_entities):
         else: 
             self.is_moving = False
             self.set_state("idle")
+    
+    def fall_off(self):
+        self.str_pos = str(self.tile_pos[0]) + ", " + str(self.tile_pos[1])
+        return self.str_pos in self.tile_map.tile_map["water_layer"] and self.str_pos not in self.tile_map.tile_map["ground_layer"]
 
 class chest(physical_entities):
     def __init__(self, game, tile_map, direction, pos):

@@ -20,7 +20,6 @@ class game:
 
         # Ingame background music % sounds
         pg.mixer.music.load("data/sound/background_music.mp3")
-        pg.mixer.music.set_volume(0.5)
         pg.mixer.music.play(loops = -1)
         self.click_sound = pg.mixer.Sound("data/sound/click_sound.wav")
 
@@ -28,7 +27,7 @@ class game:
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 11
+        self.level = 15
         self.transition = -30
         self.state = "menu"
         self.next_display = ""
@@ -206,6 +205,10 @@ class game:
                 button.render(self.display)
                 button.detect_mouse_inside(self.display, self.mouse_pos)
 
+    def lose(self):
+        if self.player.fall_off():
+            self.running = False
+
     def menu_render(self):
         self.menu_buttons = [self.play_button, self.new_game_button, self.exit_button] if self.level == 1 else [self.continue_button, self.new_game_button, self.exit_button]
         self.tile_map.render(self.display)
@@ -314,6 +317,7 @@ class game:
         self.pause_button.render(self.display)
 
     def game_update(self):
+        self.lose()
         self.player.update()
         self.player.move()
         self.chest.update()
