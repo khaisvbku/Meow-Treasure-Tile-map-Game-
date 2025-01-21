@@ -15,9 +15,15 @@ class Tilemap:
             "item": {}
             }
 
-    def render(self, surface):
+    def render(self, surface, type = None):
         for layer in self.tile_map:
-            if layer != "item":
+            if type is None:
+                if layer != "item":
+                    for loc in self.tile_map[layer]:
+                        tile = self.tile_map[layer][loc]
+                        surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
+                                    (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
+            elif type == "edit":
                 for loc in self.tile_map[layer]:
                     tile = self.tile_map[layer][loc]
                     surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 

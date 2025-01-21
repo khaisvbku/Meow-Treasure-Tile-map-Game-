@@ -4,8 +4,8 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_15"
-based_level = water
+save_name = "level_17"
+based_level = "level_17"
 
 class Editor:
     def __init__(self):
@@ -93,7 +93,7 @@ class Editor:
     def run(self):
         while self.running:
             self.display.fill("black")
-            self.tilemap.render(self.display)
+            self.tilemap.render(self.display, "edit")
             mouse_pos = (pg.mouse.get_pos()[0] * SCREEN_COEFFICIENT, pg.mouse.get_pos()[1] * SCREEN_COEFFICIENT)
             
             self.keys = pg.key.get_pressed()

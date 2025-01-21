@@ -140,3 +140,33 @@ class Word:
         self.pos = self.INITIAL_POS
         self.rect.center = self.pos
         self.done = False
+
+class Ingame_Dialog:
+    def __init__(self, text, font, size, speed, max_width):
+        self.text = text
+        self.speed = speed
+        self.max_width = max_width
+        self.font = pg.font.Font(font, size)
+
+    def wrap_text(self):
+        lines = []
+        self.text = self.text.split(" ")
+        current_line = ""
+
+        for word in self.text:
+            test_line = f"{current_line} {word}".strip()
+            if self.font.size(test_line)[0] <= self.max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+        return lines
+
+    def update(self, elapsed_time):
+        chars_to_show = int(elapsed_time * self.speed)
+        return self.text[:chars_to_show]
+
+    def render(self):
+        pass

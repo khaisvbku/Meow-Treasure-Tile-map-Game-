@@ -5,6 +5,7 @@ from scripts.tilemap import Tilemap
 
 PLAYER_RUN_DURATION = 10
 PLAYER_IDLE_DURATION = 18
+UI_EMOJI_DURATION = 10
 CHEST_FRAME_DURATION = 10
 SCREEN_COEFFICIENT = 0.5
 
@@ -27,7 +28,7 @@ class game:
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 15
+        self.level = 17
         self.transition = -30
         self.state = "menu"
         self.next_display = ""
@@ -75,6 +76,18 @@ class game:
             "chest": load_images("chests"),
             "item": load_images("item"),
 
+            # UI emojis:
+            "emoji" : {
+                "idle": Animation(load_images("UI/emoji/idle"), UI_EMOJI_DURATION),
+                "angry": Animation(load_images("UI/emoji/angry"), UI_EMOJI_DURATION),
+                "love": Animation(load_images("UI/emoji/love"), UI_EMOJI_DURATION),
+                "courage": Animation(load_images("UI/emoji/courage"), UI_EMOJI_DURATION),
+                "sleep": Animation(load_images("UI/emoji/sleep"), UI_EMOJI_DURATION),
+                "glasses": Animation(load_images("UI/emoji/glasses"), UI_EMOJI_DURATION),
+                "normal": Animation(load_images("UI/emoji/normal"), UI_EMOJI_DURATION),
+            },
+            "Dialog Box": load_image("UI/dialog box big"),
+
             # Fonts:
             "CO - Regular": "data/fonts/ChangaOne-Regular.ttf",
             "Bungee": "data/fonts/Bungee-Regular.ttf",
@@ -85,7 +98,7 @@ class game:
         self.first_word = Word(32, (252, 245, 199), (384, 40), "MEOW AHEAD", self.assets["basic_font"])
         self.second_word = Word(55, (255, 238, 147), (384, 85), "GET TREASURE", self.assets["basic_font"])
         self.words = [self.first_word, self.second_word]
-        self.tile_map = Tilemap(self)
+        self.tile_map = Tilemap(self)   
         self.tile_map.load_map("level/menu_map.json")
         self.menu_chest = chest(self, self.tile_map, self.tile_map.end_point()[0], self.tile_map.end_point()[1])
         self.menu_player = player(self, self.tile_map, self.tile_map.start_point())
@@ -120,6 +133,7 @@ class game:
         
         # Ingame Words
         self.word = Word(26, (255, 238, 147), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
+        self.lose_word = Word(26, (255, 238, 147), (384, -100), f"YOU LOSE", self.assets["Bungee"])
 
     def set_state(self, state):
         if state != self.state:
