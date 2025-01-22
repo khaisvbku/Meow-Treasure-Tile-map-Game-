@@ -1,3 +1,4 @@
+from script import script
 import pygame as pg
 import os
 BASE_IMAGE_PATH = "data/images/"
@@ -142,18 +143,35 @@ class Word:
         self.done = False
 
 class Ingame_Dialog:
-    def __init__(self, text, font, size, speed, max_width):
-        self.text = text
+    def __init__(self, game, level, size, speed, box_size: tuple):
+        self.game = game
+        self.script = script[level]["text"]
+        self.index = 0
+        self.text_box = pg.transform.scale(self.game.assets["Dialog Box"], box_size)
+        self.text = self.script[self.index][0]
         self.speed = speed
-        self.max_width = max_width
-        self.font = pg.font.Font(font, size)
+        self.UI_emoji = self.game.assets["emoji"][self.script[self.index][1]]
+        self.max_width = self.text_box.get_width() * (155/172)
+        self.font = pg.font.Font(self.game.assets["Bungee"], size)
+        self.is_done = False
+        self.time = 0
+
+    def update_text(self):
+        self.UI_emoji.update()
+        chars_to_show = int(self.time * self.speed)
+        if chars_to_show >= len(self.text):
+            self.is_done = True
+            return self.text
+        else:
+            self.time += 1/60
+            return self.text[:chars_to_show]
 
     def wrap_text(self):
         lines = []
-        self.text = self.text.split(" ")
+        words = self.update_text().split(" ")
         current_line = ""
-
-        for word in self.text:
+ 
+        for word in words:
             test_line = f"{current_line} {word}".strip()
             if self.font.size(test_line)[0] <= self.max_width:
                 current_line = test_line
@@ -164,9 +182,21 @@ class Ingame_Dialog:
             lines.append(current_line)
         return lines
 
-    def update(self, elapsed_time):
-        chars_to_show = int(elapsed_time * self.speed)
-        return self.text[:chars_to_show]
-
-    def render(self):
-        pass
+    def render(self, surface, pos):
+        text_box_rect = self.text_box.get_rect(center = pos)
+        surface.blit(pg.transform.scale(self.UI_emoji.image(), (100, 100)), (text_box_rect.topleft[0] - 120, text_box_rect[1]))
+        surface.blit(self.text_box, text_box_rect.topleft)
+        
+        for i, line in enumerate(self.wrap_text()):
+            text_surface = self.font.render(line, True, (252, 245, 199))
+            surface.blit(text_surface, (text_box_rect.x + text_box_rect.width*(5/86), 
+                                        text_box_rect.y + text_box_rect.height*(3/14) + i * (self.font.get_linesize() + 7)))
+    
+    def next_dialog(self):
+        if self.index == len(self.script) - 1:
+            self.index = 0
+        else:
+            self.index += 1
+        self.time = 0
+        self.text = self.script[self.index][0]
+        self.UI_emoji = self.game.assets["emoji"][self.script[self.index][1]]

@@ -1,7 +1,8 @@
 import pygame as pg
-from scripts.utilities import folder_len, load_image, load_images, Animation, Button, Word
+from scripts.utilities import *
 from scripts.entities import player, chest, Item
 from scripts.tilemap import Tilemap
+from scripts.script import script
 
 PLAYER_RUN_DURATION = 10
 PLAYER_IDLE_DURATION = 18
