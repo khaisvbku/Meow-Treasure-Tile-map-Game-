@@ -6,6 +6,7 @@ class game:
         pg.init()
         self.screen = pg.display.set_mode([1536, 800])
         self.clock = pg.time.Clock()
+        self.level = 1
         self.running = True
         
         self.assets = {
@@ -26,17 +27,35 @@ class game:
             "Bungee": "data/fonts/Bungee-Regular.ttf",
             "basic_font": "data/fonts/basic_font.ttf"
         }
-
-        self.dialog_text = Ingame_Dialog(self, "level 1", 15, 30, (1000, 120))
+        self.dialog = Ingame_Dialog(self, "level 1", 15, 30, (1000, 120))
 
     def handle_event(self):
-        self.screen.fill("white")
+        self.screen.fill("black")
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                self.dialog.save_script()
                 self.running = False
             elif event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1 and self.dialog_text.is_done:
-                    self.dialog_text.next_dialog()
+                if event.button == 1 and self.dialog.is_done:
+                    self.dialog.next_dialog()
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_TAB:
+                    self.level += 1
+                    if self.dialog_detect():
+                        self.dialog_create()
+                if event.key == pg.K_SPACE and self.dialog.is_done:
+                    self.dialog.next_dialog()
+                    
+
+    def dialog_detect(self) -> bool:
+        return f"level {self.level}" in self.dialog.whole_script and not self.dialog.whole_script[f"level {self.level}"]["state"]
+
+    def dialog_create(self):
+        self.dialog = Ingame_Dialog(self, f"level {self.level}", 15, 30, (1000, 120))
+
+    def dialog_update(self):
+        if self.dialog_detect():
+            self.dialog.render(self.screen)
 
     def system_update(self):
         self.clock.tick(60)
@@ -45,7 +64,7 @@ class game:
     def run(self):
         while self.running:
             self.handle_event()
-            self.dialog_text.render(self.screen, (800, 700))
+            self.dialog_update()
             self.system_update()
         pg.quit()
 

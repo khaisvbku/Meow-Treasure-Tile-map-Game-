@@ -1,12 +1,11 @@
 import pygame as pg
-from scripts.utilities import *
+from scripts.utilities import load_image, load_images, folder_len, Animation, Button, Word, Ingame_Dialog
 from scripts.entities import player, chest, Item
 from scripts.tilemap import Tilemap
-from scripts.script import script
 
 PLAYER_RUN_DURATION = 10
 PLAYER_IDLE_DURATION = 18
-UI_EMOJI_DURATION = 10
+UI_EMOJI_DURATION = 18
 CHEST_FRAME_DURATION = 10
 SCREEN_COEFFICIENT = 0.5
 
@@ -14,22 +13,25 @@ class game:
     def __init__(self):
         pg.init()
         pg.mixer.init()
-        self.screen = pg.display.set_mode((1536, 800))
+        self.screen = pg.display.set_mode((1800, 938), pg.FULLSCREEN)
         self.screen_size = self.screen.get_size()
         self.display = pg.surface.Surface((self.screen_size[0] * SCREEN_COEFFICIENT, self.screen_size[1] * SCREEN_COEFFICIENT))
+        self.width = self.display.get_width()
+        self.height = self.display.get_height()
         self.clock = pg.time.Clock()
         pg.display.set_caption("~ MEOW AHEAD GET TREASURE ~")
 
         # Ingame background music % sounds
         pg.mixer.music.load("data/sound/background_music.mp3")
         pg.mixer.music.play(loops = -1)
+        pg.mixer.music.set_volume(0.3)
         self.click_sound = pg.mixer.Sound("data/sound/click_sound.wav")
 
         self.running = True
         self.transition_done = True
         self.pause = False
         self.maximum_level = folder_len("level") - 2
-        self.level = 17
+        self.level = 1
         self.transition = -30
         self.state = "menu"
         self.next_display = ""
@@ -87,7 +89,7 @@ class game:
                 "glasses": Animation(load_images("UI/emoji/glasses"), UI_EMOJI_DURATION),
                 "normal": Animation(load_images("UI/emoji/normal"), UI_EMOJI_DURATION),
             },
-            "Dialog Box": load_image("UI/dialog box big"),
+            "Dialog Box": load_image("UI/dialog box big.png"),
 
             # Fonts:
             "CO - Regular": "data/fonts/ChangaOne-Regular.ttf",
@@ -95,25 +97,28 @@ class game:
             "basic_font": "data/fonts/basic_font.ttf"
         }
 
+        # Ingame dialog:
+        self.dialog = Ingame_Dialog(self, "level 1", 7, 30, (500, 60))
+
         # Menu display resources
-        self.first_word = Word(32, (252, 245, 199), (384, 40), "MEOW AHEAD", self.assets["basic_font"])
-        self.second_word = Word(55, (255, 238, 147), (384, 85), "GET TREASURE", self.assets["basic_font"])
+        self.first_word = Word(55, (252, 245, 199), (self.width/2, 60), "MEOW AHEAD", self.assets["basic_font"])
+        self.second_word = Word(70, (255, 238, 147), (self.width/2, 130), "GET TREASURE", self.assets["basic_font"])
         self.words = [self.first_word, self.second_word]
         self.tile_map = Tilemap(self)   
         self.tile_map.load_map("level/menu_map.json")
         self.menu_chest = chest(self, self.tile_map, self.tile_map.end_point()[0], self.tile_map.end_point()[1])
         self.menu_player = player(self, self.tile_map, self.tile_map.start_point())
-        self.play_button = Button(self.assets["menu_play"], (112, 52), (384, 165), (252, 245, 199), 2)
-        self.continue_button = Button(self.assets["menu_continue"], (112, 52), (384, 165), (252, 245, 199), 2)
-        self.new_game_button = Button(self.assets["menu_newgame"], (112, 52), (384, 225), (252, 245, 199), 2)
-        self.exit_button = Button(self.assets["menu_exit"], (112, 52), (384, 285), (252, 245, 199), 2)
+        self.play_button = Button(self.assets["menu_play"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
+        self.continue_button = Button(self.assets["menu_continue"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
+        self.new_game_button = Button(self.assets["menu_newgame"], (128, 60), (self.width/2, 320), (252, 245, 199), 2)
+        self.exit_button = Button(self.assets["menu_exit"], (128, 60), (self.width/2, 400), (252, 245, 199), 2)
 
         # Pause resources:
         self.pause_button = Button(self.assets["pause_icon"], (32, 32), (20, 20), (252, 245, 199), 2)
-        self.pause_word = Word(36, (252, 245, 199), (384, 130), "PAUSE", self.assets["basic_font"])
+        self.pause_word = Word(36, (252, 245, 199), (self.width/2, 130), "PAUSE", self.assets["basic_font"])
         self.pause_resume = Button(self.assets["pause_resume"], (86, 42), (334, 180), (252, 245, 199), 2)
         self.pause_restart = Button(self.assets["pause_restart"], (86, 42), (434, 180), (252, 245, 199), 2)
-        self.pause_home = Button(self.assets["pause_home"], (86, 42), (384, 230), (252, 245, 199), 2)
+        self.pause_home = Button(self.assets["pause_home"], (86, 42), (self.width/2, 230), (252, 245, 199), 2)
         self.pause_buttons = [self.pause_resume, self.pause_restart, self.pause_home]
 
         # Ingame resources
@@ -128,13 +133,13 @@ class game:
 
         # Ingame buttons
         self.replay_button = Button(self.assets["replay"], (42, 42), [324, 210], (252, 245, 199), 2, "appear")
-        self.home = Button(self.assets["home"], (42, 42), [384, 210], (252, 245, 199), 2, "appear")
+        self.home = Button(self.assets["home"], (42, 42), [self.width/2, 210], (252, 245, 199), 2, "appear")
         self.next_level_button = Button(self.assets["next_level"], (42, 42), [444, 210], (252, 245, 199), 2, "appear")
         self.ingame_buttons = [self.replay_button, self.home, self.next_level_button]
         
         # Ingame Words
-        self.word = Word(26, (255, 238, 147), (384, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
-        self.lose_word = Word(26, (255, 238, 147), (384, -100), f"YOU LOSE", self.assets["Bungee"])
+        self.word = Word(26, (255, 238, 147), (self.width/2, -100), f"LEVEL {self.level} COMPLETE", self.assets["Bungee"])
+        self.lose_word = Word(26, (255, 238, 147), (self.width/2, -100), f"YOU LOSE", self.assets["Bungee"])
 
     def set_state(self, state):
         if state != self.state:
@@ -162,6 +167,8 @@ class game:
         elif name == "level up":
             self.set_state("play")
             self.level = min(self.level + 1, self.maximum_level)
+            if self.dialog_detect():
+                self.dialog_create()
 
             for button in self.ingame_buttons:
                 button.reset()
@@ -207,7 +214,7 @@ class game:
             self.display.blit(transition_surf, (0, 0))
 
     def win(self):
-        self.word.render(self.display, "fly", [384, 160], 5)
+        self.word.render(self.display, "fly", [self.width/2, 160], 5)
         if self.word.done and self.level == self.maximum_level: # Reach the highest level
             for num, button in enumerate(self.ingame_buttons):
                 if button != self.next_level_button:
@@ -223,6 +230,12 @@ class game:
     def lose(self):
         if self.player.fall_off():
             self.running = False
+
+    def dialog_detect(self) -> bool:
+        return f"level {self.level}" in self.dialog.whole_script and not self.dialog.whole_script[f"level {self.level}"]["state"]
+
+    def dialog_create(self):
+        self.dialog.reset_dialog(f"level {self.level}")
 
     def menu_render(self):
         self.menu_buttons = [self.play_button, self.new_game_button, self.exit_button] if self.level == 1 else [self.continue_button, self.new_game_button, self.exit_button]
@@ -251,33 +264,41 @@ class game:
         self.mouse_pos = (pg.mouse.get_pos()[0] * SCREEN_COEFFICIENT, pg.mouse.get_pos()[1] * SCREEN_COEFFICIENT)
         for event in pg.event.get():
                 if event.type == pg.QUIT:
+                    self.dialog.save_script()
                     pg.mixer.music.stop()
                     self.running = False
+
                 if event.type == pg.KEYDOWN:
-                    if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
-                        self.player.is_moving = True
-                        self.player.set_state("run")
-                        self.player.set_direction("left")
+                    if not self.dialog_detect() or (self.dialog_detect() and self.dialog.whole_script[f"level {self.level}"]["state"]):
+                        if (event.key == pg.K_a or event.key == pg.K_LEFT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
+                            self.player.is_moving = True
+                            self.player.set_state("run")
+                            self.player.set_direction("left")
+                            
+                        elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
+                            self.player.is_moving = True
+                            self.player.set_state("run")
+                            self.player.set_direction("right")
+                            
+                        elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
+                            self.player.is_moving = True
+                            self.player.set_state("run")
+                            self.player.set_direction("front")
+                            
+                        elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
+                            self.player.is_moving = True
+                            self.player.set_state("run")
+                            self.player.set_direction("back")
                         
-                    elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
-                        self.player.is_moving = True
-                        self.player.set_state("run")
-                        self.player.set_direction("right")
-                        
-                    elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
-                        self.player.is_moving = True
-                        self.player.set_state("run")
-                        self.player.set_direction("front")
-                        
-                    elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
-                        self.player.is_moving = True
-                        self.player.set_state("run")
-                        self.player.set_direction("back")
-                    elif event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
-                        self.pause = not self.pause
-                        self.click_sound.play()
+                        if event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
+                            self.pause = not self.pause
+                            self.click_sound.play()
+                
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == 1: # Left button clicked
+                        if self.dialog.is_done:
+                            self.dialog.next_dialog()
+
                         if self.state == "menu": # MENU
                             if self.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
                                 self.running = False
@@ -344,6 +365,8 @@ class game:
             self.win()
         else:
             self.pause_button.detect_mouse_inside(self.display, self.mouse_pos)
+        if self.dialog_detect():
+            self.dialog.render(self.display)
 
     def system_update(self):
         self.screen.blit((pg.transform.scale(self.display, self.screen.get_size())), (0, 0))

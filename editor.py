@@ -4,13 +4,13 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_17"
-based_level = "level_17"
+save_name = "level_1"
+based_level =  water
 
 class Editor:
     def __init__(self):
         pg.init()
-        self.screen = pg.display.set_mode((1536, 800))
+        self.screen = pg.display.set_mode((1800, 938), pg.FULLSCREEN)
         self.display = pg.surface.Surface((self.screen.get_width()*SCREEN_COEFFICIENT, self.screen.get_height()*SCREEN_COEFFICIENT))
         self.clock = pg.time.Clock()
         pg.display.set_caption("Mini game")
@@ -60,6 +60,36 @@ class Editor:
                         self.tile_group = 6
                         self.tile_variant = 0
 
+                    elif event.key == pg.K_1:
+                        self.tile_layer = 0
+                        self.tile_group = 0
+                        self.tile_variant = 0
+
+                    elif event.key == pg.K_2:
+                        self.tile_layer = 1
+                        self.tile_group = 1
+                        self.tile_variant = 0
+                    
+                    elif event.key == pg.K_3:
+                        self.tile_layer = 2
+                        self.tile_group = 2
+                        self.tile_variant = 0
+
+                    elif event.key == pg.K_4:
+                        self.tile_layer = 3
+                        self.tile_group = 3
+                        self.tile_variant = 0
+
+                    elif event.key == pg.K_5:
+                        self.tile_layer = 4
+                        self.tile_group = 4
+                        self.tile_variant = 0
+
+                    elif event.key == pg.K_6:
+                        self.tile_layer = 5
+                        self.tile_group = 5
+                        self.tile_variant = 0
+
                     if self.shift and event.key == pg.K_o:
                         self.tilemap.save_map(f"level/{save_name}.json")
                     elif self.shift and event.key == pg.K_l:
@@ -92,6 +122,7 @@ class Editor:
 
     def run(self):
         while self.running:
+            self.handle_event()
             self.display.fill("black")
             self.tilemap.render(self.display, "edit")
             mouse_pos = (pg.mouse.get_pos()[0] * SCREEN_COEFFICIENT, pg.mouse.get_pos()[1] * SCREEN_COEFFICIENT)
@@ -116,8 +147,6 @@ class Editor:
             current_tile.set_alpha(150)
             
             self.display.blit(current_tile, (tile_pos[0] * self.tilemap.tile_size, tile_pos[1] * self.tilemap.tile_size))
-
-            self.handle_event()
             
             self.show_layer.update(f"layer: {self.tile_layer_name[self.tile_layer]}")
             self.show_layer.render(self.display)
@@ -127,7 +156,7 @@ class Editor:
 
             self.screen.blit(pg.transform.scale(self.display, self.screen.get_size()), (0, 0))
             self.clock.tick(60)
-            pg.display.flip()    
+            pg.display.flip() 
         pg.quit()
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-from script import script
 import pygame as pg
+import json
 import os
 BASE_IMAGE_PATH = "data/images/"
 
@@ -145,7 +145,10 @@ class Word:
 class Ingame_Dialog:
     def __init__(self, game, level, size, speed, box_size: tuple):
         self.game = game
-        self.script = script[level]["text"]
+        self.level = level
+        self.whole_script = {}
+        self.load_script()
+        self.script = self.whole_script[level]["text"]
         self.index = 0
         self.text_box = pg.transform.scale(self.game.assets["Dialog Box"], box_size)
         self.text = self.script[self.index][0]
@@ -155,6 +158,14 @@ class Ingame_Dialog:
         self.font = pg.font.Font(self.game.assets["Bungee"], size)
         self.is_done = False
         self.time = 0
+
+    def save_script(self):
+        with open("data/data/game_script.json", "w") as json_file:
+            json.dump(self.whole_script, json_file, indent = 4)
+
+    def load_script(self):
+        with open("data/data/game_script.json", "r") as json_file:
+            self.whole_script = json.load(json_file)
 
     def update_text(self):
         self.UI_emoji.update()
@@ -182,21 +193,32 @@ class Ingame_Dialog:
             lines.append(current_line)
         return lines
 
-    def render(self, surface, pos):
-        text_box_rect = self.text_box.get_rect(center = pos)
-        surface.blit(pg.transform.scale(self.UI_emoji.image(), (100, 100)), (text_box_rect.topleft[0] - 120, text_box_rect[1]))
+    def render(self, surface):
+        # Text box and NPC
+        text_box_rect = self.text_box.get_rect(center = [400, 350])
+        surface.blit(pg.transform.scale(self.UI_emoji.image(), (50, 50)), (text_box_rect.topleft[0] - 60, text_box_rect[1]))
         surface.blit(self.text_box, text_box_rect.topleft)
         
+        # Text
         for i, line in enumerate(self.wrap_text()):
             text_surface = self.font.render(line, True, (252, 245, 199))
             surface.blit(text_surface, (text_box_rect.x + text_box_rect.width*(5/86), 
-                                        text_box_rect.y + text_box_rect.height*(3/14) + i * (self.font.get_linesize() + 7)))
+                                        text_box_rect.y + text_box_rect.height*(3/14) + i * (self.font.get_linesize() + 4)))
     
     def next_dialog(self):
         if self.index == len(self.script) - 1:
-            self.index = 0
+            self.whole_script[self.level]["state"] = True
         else:
             self.index += 1
         self.time = 0
+        self.is_done = False
+        self.text = self.script[self.index][0]
+        self.UI_emoji = self.game.assets["emoji"][self.script[self.index][1]]
+
+    def reset_dialog(self, level):
+        self.script = self.whole_script[level]["text"]
+        self.index = 0
+        self.time = 0
+        self.is_done = False
         self.text = self.script[self.index][0]
         self.UI_emoji = self.game.assets["emoji"][self.script[self.index][1]]
