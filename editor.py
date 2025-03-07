@@ -4,8 +4,9 @@ from scripts.tilemap import Tilemap
 
 SCREEN_COEFFICIENT = 0.5
 water = "water_layer"
-save_name = "level_1"
-based_level =  water
+save_name = "level_9"
+review_level = save_name
+based_level =  save_name
 
 class Editor:
     def __init__(self):
@@ -92,8 +93,15 @@ class Editor:
 
                     if self.shift and event.key == pg.K_o:
                         self.tilemap.save_map(f"level/{save_name}.json")
+                    
                     elif self.shift and event.key == pg.K_l:
                         self.tilemap.load_map(f"level/{based_level}.json")
+                        self.tile_layer = 0
+                        self.tile_group = 0
+                        self.tile_variant = 0
+                    
+                    elif self.shift and event.key == pg.K_q:
+                        self.tilemap.load_map(f"level/{review_level}.json")
                         self.tile_layer = 0
                         self.tile_group = 0
                         self.tile_variant = 0
