@@ -100,7 +100,6 @@ class game:
             "bungee": "data/fonts/bungee.ttf",
             "basic": "data/fonts/basic.ttf",
             "pixel" : "data/fonts/pixel.ttf",
-            "pixellari" : "data/fonts/pixellari.ttf",
             "absender": "data/fonts/absender.ttf",
             "consolamono": "data/fonts/consolamono.ttf",
             "downtown": "data/fonts/downtown.otf",
@@ -113,17 +112,25 @@ class game:
 
         # Menu display resources
         self.menu_item_list = {}
-        self.first_word = Word(55, (252, 245, 199), (self.width/2, 60), "MEOW AHEAD", self.assets["basic"])
-        self.second_word = Word(70, (255, 238, 147), (self.width/2, 130), "GET TREASURE", self.assets["basic"])
-        self.words = [self.first_word, self.second_word]
+
+        self.first_word = Word(65, (252, 245, 199), (self.width/2, 60), "MEOW  AHEAD", self.assets["changaone"])
+        self.second_word = Word(76, (255, 238, 147), (self.width/2, 130), "GET  TREASURE", self.assets["changaone"])
+        self.third_word = Word(20, (255, 238, 147), (120, self.height - 15), "Beta version ", self.assets["pixel"])
+        self.words = [self.first_word, self.second_word, self.third_word]
+        
         self.menu_map = Tilemap(self)   
+        
         self.menu_map.load_map("level/menu_map.json")
+        
         self.menu_chest = chest(self, self.menu_map, self.menu_map.end_point()[0], self.menu_map.end_point()[1])
+        
         self.menu_player = player(self, self.menu_map, self.menu_map.start_point())
+        
         self.play_button = Button(self.assets["menu_play"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
         self.continue_button = Button(self.assets["menu_continue"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
         self.new_game_button = Button(self.assets["menu_newgame"], (128, 60), (self.width/2, 320), (252, 245, 199), 2)
         self.exit_button = Button(self.assets["menu_exit"], (128, 60), (self.width/2, 400), (252, 245, 199), 2)
+
         for loc in self.menu_map.item_pos():
             item = self.menu_map.item_pos()[loc]
             self.menu_item_list[loc] = Item(self, item["pos"], item["variant"])
@@ -153,7 +160,7 @@ class game:
         self.ingame_buttons = [self.replay_button, self.home, self.next_level_button]
         
         # Ingame Words
-        self.word = Word(26, (255, 238, 147), (self.width/2, -100), f"LEVEL {self.level} COMPLETE", self.assets["bungee"])
+        self.word = Word(26, (255, 238, 147), (self.width/2, -100), f"LEVEL {self.level} COMPLETED", self.assets["bungee"])
         self.lose_word = Word(26, (255, 238, 147), (self.width/2, -100), f"YOU LOSE", self.assets["bungee"])
 
     def set_state(self, state):
@@ -169,7 +176,7 @@ class game:
             self.level = 1
             for button in self.ingame_buttons:
                 button.reset()
-            self.word.update(f"LEVEL {self.level} COMPLETE")
+            self.word.update(f"LEVEL {self.level} COMPLETED")
             self.word.reset()
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
@@ -187,7 +194,7 @@ class game:
 
             for button in self.ingame_buttons:
                 button.reset()
-            self.word.update(f"LEVEL {self.level} COMPLETE")
+            self.word.update(f"LEVEL {self.level} COMPLETED")
             self.word.reset()
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
@@ -201,7 +208,7 @@ class game:
             self.set_state("play")
             for button in self.ingame_buttons:
                 button.reset()
-            self.word.update(f"LEVEL {self.level} COMPLETE")
+            self.word.update(f"LEVEL {self.level} COMPLETED")
             self.word.reset()
             self.tilemap.load_map(f"level/level_{self.level}.json")
             self.chest = chest(self, self.tilemap, self.tilemap.end_point()[0], self.tilemap.end_point()[1])
@@ -248,7 +255,6 @@ class game:
 
     def dialog_detect(self) -> bool:
         return f"level {self.level}" in self.dialog.whole_script and not self.dialog.whole_script[f"level {self.level}"]["state"]
-
 
     def menu_render(self):
         self.menu_buttons = [self.play_button, self.new_game_button, self.exit_button] if self.level == 1 else [self.continue_button, self.new_game_button, self.exit_button]
@@ -317,6 +323,7 @@ class game:
                     if event.button == 1: 
                         if self.dialog.is_done:
                             self.dialog.next_dialog()
+                            self.click_sound.play()
 
                         if self.state == "menu": # MENU
                             if self.exit_button.detect_mouse_inside(self.display, self.mouse_pos):
@@ -344,7 +351,7 @@ class game:
                                 self.transition_done = False
                                 self.next_display = "home"
                                 self.click_sound.play()
-                            elif self.pause_button.detect_mouse_inside(self.display, self.mouse_pos) and not self.pause and not self.chest.animation.done:
+                            elif self.pause_button.detect_mouse_inside(self.display, self.mouse_pos) and not (self.pause or self.dialog_detect() or (self.dialog_detect() and self.dialog.whole_script[f"level {self.level}"]["state"])):
                                 self.pause = True
                                 self.click_sound.play()
                             

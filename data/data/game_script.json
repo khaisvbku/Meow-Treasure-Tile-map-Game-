@@ -2,7 +2,7 @@
     "level 1": {
         "text": [
             [
-                "Hello there ! Are you a newbie about this game? That's gonna be alright because I'm here to instruct you how to achieve all the levels of this game.",
+                "Hello there ! Are you a newbie to this game? That's gonna be alright because I'm here to help you to achieve all the levels of this game.",
                 "courage"
             ],
             [
@@ -10,41 +10,44 @@
                 "idle"
             ],
             [
-                "I will introduce more mechanics in the near future. So don't worry about it, just feel free to enjoy the game ^ ^ !",
+                "With 'W' is go up, 'D' is down, 'A' is left and 'S' is right.",
+                "glasses"
+            ],
+            [
+                "I will introduce you more mechanics in the near future. So don't worry about it, just feel free to enjoy the game ^ ^ !",
                 "love"
             ]
         ],
         "state": false
     },
-    "level 3": {
+    "level 7": {
         "text": [
             [
-                "Hi there ! We meet again. How are you doing ? I hope that you still enjoy this game eventhough there are several 'cringe' gameplay that this game has.",
-                "idle"
+                "From this level onwards, there will be more and more obstacles appearing around the map. You can't get through them but they're really useful in some cases.",
+                "glasses"
             ],
             [
-                "I will be back whenever you need, but not now ^ ^",
-                "idle"
-            ],
-            [
-                "see yah !!!",
-                "courage"
+                "Learn how to make use of them and you can get the meow treasure easy as pie !!! ",
+                "love"
             ]
         ],
         "state": false
     },
     "level 10": {
         "text": [
-            ""
+            [
+                "Hi there !! This is the last level of the first beta version. I hope that you like this game although there are still some weaknesses.",
+                "idle"
+            ],
+            [
+                "I will release the full version of this game with more fantastic gameplay and more level as soon as posible so that you could play freely.",
+                "glasses"
+            ],
+            [
+                "Thanks for playing this game and Happy Women's Day !!!!!!!",
+                "love"
+            ]
         ],
-        "state": true
-    },
-    "level 15": {
-        "text": [],
-        "state": true
-    },
-    "level 20": {
-        "text": [],
-        "state": true
+        "state": false
     }
 }

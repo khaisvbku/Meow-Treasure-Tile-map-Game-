@@ -199,9 +199,9 @@ class Ingame_Dialog:
         
         # Text
         for i, line in enumerate(self.wrap_text()):
-            text_surface = self.font.render(line, 1, (0, 0, 0))
+            text_surface = self.font.render(line, 1, (128, 78, 73))
             surface.blit(text_surface, (text_box_rect.x + text_box_rect.width*(5/86), 
-                                        text_box_rect.y + text_box_rect.height*(3/14) + i * (self.font.get_linesize() + 4)))
+                                        text_box_rect.y + text_box_rect.height*(2/14) + i * (self.font.get_linesize() + 4)))
     
     def next_dialog(self):
         if self.index == len(self.script) - 1:
@@ -217,10 +217,8 @@ class Ingame_Dialog:
         self.index = 0
         self.time = 0
         self.is_done = False
-        self.level = level  # Cập nhật level mới
+        self.level = level 
         self.script = self.whole_script[level]["text"]
         self.text = self.script[self.index][0]
         self.UI_emoji = self.game.assets["emoji"][self.script[self.index][1]]
-        
-        # Đặt lại state của hội thoại để nó có thể bắt đầu lại từ đầu
         self.whole_script[level]["state"] = False
