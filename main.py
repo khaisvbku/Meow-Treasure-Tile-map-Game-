@@ -35,6 +35,7 @@ class game:
         self.pause = False
         self.maximum_level = folder_len("level") - 2
         self.level = 1
+        self.limit_step = 0
         self.load_level()
         self.transition = -30
         self.state = "menu"
@@ -85,13 +86,13 @@ class game:
 
             # UI emojis:
             "emoji" : {
-                "idle": Animation(load_images("UI/emoji/idle"), UI_EMOJI_DURATION),
-                "angry": Animation(load_images("UI/emoji/angry"), UI_EMOJI_DURATION),
-                "love": Animation(load_images("UI/emoji/love"), UI_EMOJI_DURATION),
-                "courage": Animation(load_images("UI/emoji/courage"), UI_EMOJI_DURATION),
-                "sleep": Animation(load_images("UI/emoji/sleep"), UI_EMOJI_DURATION),
-                "glasses": Animation(load_images("UI/emoji/glasses"), UI_EMOJI_DURATION),
-                "normal": Animation(load_images("UI/emoji/normal"), UI_EMOJI_DURATION),
+                "idle"   :  Animation(load_images("UI/emoji/idle"), UI_EMOJI_DURATION),
+                "angry"  :  Animation(load_images("UI/emoji/angry"), UI_EMOJI_DURATION),
+                "love"   :  Animation(load_images("UI/emoji/love"), UI_EMOJI_DURATION),
+                "courage":  Animation(load_images("UI/emoji/courage"), UI_EMOJI_DURATION),
+                "sleep"  :  Animation(load_images("UI/emoji/sleep"), UI_EMOJI_DURATION),
+                "glasses":  Animation(load_images("UI/emoji/glasses"), UI_EMOJI_DURATION),
+                "normal" :  Animation(load_images("UI/emoji/normal"), UI_EMOJI_DURATION),
             },
             "Dialog Box": load_image("UI/dialog box big.png"),
 
@@ -100,11 +101,6 @@ class game:
             "bungee": "data/fonts/bungee.ttf",
             "basic": "data/fonts/basic.ttf",
             "pixel" : "data/fonts/pixel.ttf",
-            "absender": "data/fonts/absender.ttf",
-            "consolamono": "data/fonts/consolamono.ttf",
-            "downtown": "data/fonts/downtown.otf",
-            "caviardream": "data/fonts/caviardream.ttf",
-            "caviardream_bold": "data/fonts/caviardream_bold.ttf"
         }
 
         # Ingame dialog:
@@ -113,9 +109,9 @@ class game:
         # Menu display resources
         self.menu_item_list = {}
 
-        self.first_word = Word(65, (252, 245, 199), (self.width/2, 60), "MEOW  AHEAD", self.assets["changaone"])
-        self.second_word = Word(76, (255, 238, 147), (self.width/2, 130), "GET  TREASURE", self.assets["changaone"])
-        self.third_word = Word(20, (255, 238, 147), (120, self.height - 15), "Beta version ", self.assets["pixel"])
+        self.first_word  =  Word(65, (252, 245, 199), (self.width/2, 60), "MEOW  AHEAD", self.assets["changaone"])
+        self.second_word =  Word(76, (255, 238, 147), (self.width/2, 130), "GET  TREASURE", self.assets["changaone"])
+        self.third_word  =  Word(20, (255, 238, 147), (120, self.height - 15), "Beta version ", self.assets["pixel"])
         self.words = [self.first_word, self.second_word, self.third_word]
         
         self.menu_map = Tilemap(self)   
@@ -126,22 +122,22 @@ class game:
         
         self.menu_player = player(self, self.menu_map, self.menu_map.start_point())
         
-        self.play_button = Button(self.assets["menu_play"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
-        self.continue_button = Button(self.assets["menu_continue"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
-        self.new_game_button = Button(self.assets["menu_newgame"], (128, 60), (self.width/2, 320), (252, 245, 199), 2)
-        self.exit_button = Button(self.assets["menu_exit"], (128, 60), (self.width/2, 400), (252, 245, 199), 2)
+        self.play_button     =   Button(self.assets["menu_play"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
+        self.continue_button =   Button(self.assets["menu_continue"], (128, 60), (self.width/2, 240), (252, 245, 199), 2)
+        self.new_game_button =   Button(self.assets["menu_newgame"], (128, 60), (self.width/2, 320), (252, 245, 199), 2)
+        self.exit_button     =   Button(self.assets["menu_exit"], (128, 60), (self.width/2, 400), (252, 245, 199), 2)
 
         for loc in self.menu_map.item_pos():
             item = self.menu_map.item_pos()[loc]
             self.menu_item_list[loc] = Item(self, item["pos"], item["variant"])
 
         # Pause resources:
-        self.pause_button = Button(self.assets["pause_icon"], (36, 36), (24, 24), (252, 245, 199), 2)
-        self.pause_resume = Button(self.assets["pause_resume"], (112, 52), (self.width/2 - 60, 270), (252, 245, 199), 2)
-        self.pause_restart = Button(self.assets["pause_restart"], (112, 52), (self.width/2 + 60, 270), (252, 245, 199), 2)
-        self.pause_home = Button(self.assets["pause_home"], (112, 52), (self.width/2, 330), (252, 245, 199), 2)
-        self.pause_word = Word(36, (252, 245, 199), (self.width/2, 210), "PAUSE", self.assets["basic"])
-        self.pause_buttons = [self.pause_resume, self.pause_restart, self.pause_home]
+        self.pause_button   =   Button(self.assets["pause_icon"], (36, 36), (24, 24), (252, 245, 199), 2)
+        self.pause_resume   =   Button(self.assets["pause_resume"], (112, 52), (self.width/2 - 60, 270), (252, 245, 199), 2)
+        self.pause_restart  =   Button(self.assets["pause_restart"], (112, 52), (self.width/2 + 60, 270), (252, 245, 199), 2)
+        self.pause_home     =   Button(self.assets["pause_home"], (112, 52), (self.width/2, 330), (252, 245, 199), 2)
+        self.pause_word     =   Word(36, (252, 245, 199), (self.width/2, 210), "PAUSE", self.assets["basic"])
+        self.pause_buttons  =   [self.pause_resume, self.pause_restart, self.pause_home]
 
         # Ingame resources
         self.tilemap = Tilemap(self)
@@ -250,8 +246,12 @@ class game:
                 button.detect_mouse_inside(self.display, self.mouse_pos)
 
     def lose(self):
-        if self.player.fall_off():
+        if self.player.fall_off() or (not self.limit_step and self.player.is_moving):
+            print("game over")
             self.running = False
+
+    def manage_step(self):
+        pass    
 
     def dialog_detect(self) -> bool:
         return f"level {self.level}" in self.dialog.whole_script and not self.dialog.whole_script[f"level {self.level}"]["state"]
@@ -299,21 +299,25 @@ class game:
                             self.player.is_moving = True
                             self.player.set_state("run")
                             self.player.set_direction("left")
+                            self.limit_step -= 1
                             
                         elif (event.key == pg.K_d or event.key == pg.K_RIGHT) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                             self.player.is_moving = True
                             self.player.set_state("run")
                             self.player.set_direction("right")
-                            
+                            self.limit_step -= 1
+
                         elif (event.key == pg.K_s or event.key == pg.K_DOWN) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                             self.player.is_moving = True
                             self.player.set_state("run")
                             self.player.set_direction("front")
+                            self.limit_step -= 1
                             
                         elif (event.key == pg.K_w or event.key == pg.K_UP) and not (self.player.is_moving or self.pause or (not len(self.item_list) and self.player.found_chest())):
                             self.player.is_moving = True
                             self.player.set_state("run")
                             self.player.set_direction("back")
+                            self.limit_step -= 1
                         
                         if event.key == pg.K_ESCAPE and self.state == "play" and not self.chest.animation.done:
                             self.pause = not self.pause

@@ -12,22 +12,24 @@ class Tilemap:
             "fence_layer": {},
             "object_layer": {},
             "chest" : {},
-            "item": {}
+            "item": {},
+            "step" : 0
             }
 
     def render(self, surface, type = None):
         for layer in self.tile_map:
-            if type is None:
-                if layer != "item":
-                    for loc in self.tile_map[layer]:
-                        tile = self.tile_map[layer][loc]
-                        surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
-                                    (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
-            elif type == "edit":
+            if type == "edit" and layer != "step":
                 for loc in self.tile_map[layer]:
                     tile = self.tile_map[layer][loc]
                     surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
                                 (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
+            else:
+                if layer != "item" and layer != "step":
+                    for loc in self.tile_map[layer]:
+                        tile = self.tile_map[layer][loc]
+                        surface.blit(pg.transform.scale(self.game.assets[tile["group"]][tile["variant"]], (self.tile_size, self.tile_size)), 
+                                    (tile["pos"][0] * self.tile_size, tile["pos"][1] * self.tile_size))
+            
 
     def item_pos(self):
         return self.tile_map["item"]
